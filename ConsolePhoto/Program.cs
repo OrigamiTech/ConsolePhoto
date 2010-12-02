@@ -17,13 +17,28 @@ namespace ConsolePhoto
                 if (File.Exists(path))
                     try { Image img = Image.FromFile(path); bmp = new Bitmap(img); img.Dispose(); didLoad = true; }
                     catch { }
+            if (!didLoad)
+            {
+                try
+                {
+                    bmp = BitmapFromBase64(Base64.TROLLFACE);
+                    didLoad = true;
+                }
+                catch { }
+            }
             if (didLoad)
             {
-                Console.ReadLine();
+                Console.WriteLine("Please press Alt+Enter to make this full-screen.\nThis may not work on Vista/7.\nThen press any key to continue.");
+                Console.ReadKey();
+                Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
+                Console.SetWindowPosition(0, 0);
+                Console.Clear();
+                Console.SetCursorPosition(0, 0);
                 ConsoleColor BackingColor = ConsoleColor.Black;
                 Size s = GetSize(bmp.Size, new Size(Console.WindowWidth, Console.WindowHeight));
                 Bitmap b = new Bitmap(s.Width, s.Height * 2);
                 Graphics g = Graphics.FromImage(b);
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
                 g.DrawImage(bmp, new Rectangle(new Point(0, 0), b.Size), new Rectangle(new Point(0, 0), bmp.Size), GraphicsUnit.Pixel);
                 g.Dispose();
                 bmp.Dispose();
@@ -94,6 +109,13 @@ namespace ConsolePhoto
             else if (H >= 4.5d && H < 5.5d)
                 return L > 0.5d ? ConsoleColor.Magenta : ConsoleColor.DarkMagenta;
             return ConsoleColor.Black;
+        }
+        static Bitmap BitmapFromBase64(string base64)
+        {
+            byte[] imageBytes = Convert.FromBase64String(base64);
+            MemoryStream ms = new MemoryStream(imageBytes, 0, imageBytes.Length);
+            ms.Write(imageBytes, 0, imageBytes.Length);
+            return new Bitmap(Image.FromStream(ms, true));
         }
     }
 }
